@@ -1,28 +1,47 @@
-// Optional: Add typing animation for dynamic-text
-const textElement = document.getElementById('dynamic-text');
-const words = ['Student', 'Developer', 'Research Intern'];
-let wordIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
+document.addEventListener('DOMContentLoaded', () => {
+    const menuIcon = document.querySelector('#menu-icon');
+    const navLinks = document.querySelector('.nav-links');
+    const header = document.querySelector('.header');
+    const scrollDistance = header?.offsetHeight || 0;
 
-function typeEffect() {
-  const current = words[wordIndex];
-  const display = isDeleting
-    ? current.substring(0, charIndex--)
-    : current.substring(0, charIndex++);
+    // Debounced scroll handler
+    let scrollTimeout;
+    function toggleStickyHeader() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            if (window.scrollY > scrollDistance) {
+                header?.classList.add('sticky');
+                navLinks?.classList.add('rounded');
+            } else {
+                header?.classList.remove('sticky');
+                navLinks?.classList.remove('rounded');
+            }
+        }, 10); // 10ms delay
+    }
 
-  textElement.textContent = display;
+    window.addEventListener('scroll', toggleStickyHeader);
 
-  if (!isDeleting && charIndex === current.length) {
-    isDeleting = true;
-    setTimeout(typeEffect, 1500);
-  } else if (isDeleting && charIndex === 0) {
-    isDeleting = false;
-    wordIndex = (wordIndex + 1) % words.length;
-    setTimeout(typeEffect, 500);
-  } else {
-    setTimeout(typeEffect, isDeleting ? 50 : 100);
-  }
-}
+    if (menuIcon && navLinks) {
+        menuIcon.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            menuIcon.classList.toggle('fa-times');
+        });
+    }
 
-typeEffect();
+    // Fade in sections using IntersectionObserver
+    const sections = document.querySelectorAll('section');
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        sections.forEach(section => observer.observe(section));
+    } else {
+        // Fallback for unsupported browsers
+        sections.forEach(section => section.classList.add('in-view'));
+    }
+});
